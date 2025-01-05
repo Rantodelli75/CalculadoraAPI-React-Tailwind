@@ -1,5 +1,5 @@
-import './App.css'
-import Calculator from './app/price/page'
+import '@/App.css'
+import Calculator from '@/app/price/page'
 
 function App() {
 
