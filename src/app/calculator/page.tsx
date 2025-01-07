@@ -11,9 +11,15 @@ import {
 } from "@/components/ui/select"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons'
-import { data } from "react-router-dom"
 
-
+interface DollarResponse {
+  monitors: {
+    bcv: {
+      price: number;
+      last_update: string;
+    }
+  }
+}
 
 export default function Calculator() {
   const [amount, setAmount] = useState("")
@@ -26,7 +32,7 @@ export default function Calculator() {
   useEffect(() => {
     const getExchangeRate = async () => {
       try {
-        const data = await fetchDollarParallel();
+        const data = await fetchDollarParallel() as DollarResponse;
         setExchangeRate(data.monitors.bcv.price);
         setLastUpdate(data.monitors.bcv.last_update);
       } catch (error) {
@@ -110,7 +116,7 @@ export default function Calculator() {
   };
 
   return (
-    <div className="min-h-screen p-4 flex items-center justify-center">
+    <div className="min-h-[100vh] flex items-center justify-center p-4 overflow-hidden">
       <Card className="w-full max-w-3xl shadow-xl">
         <CardContent className="p-6">
           <div className="grid gap-6">
