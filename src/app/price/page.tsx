@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { fetchDollarParallel } from '@/api/api';
-import { NavigationTabs } from '@/components/global/tabs';
 import { MonitorCard } from '@/components/price/price';
 
 // Define un tipo para la estructura de los datos que esperas
@@ -11,12 +10,16 @@ interface DollarParallel {
             change: number;
             last_update: string;
             price: number;
+            symbol: string;
+            color: string;
         };
         enparalelovzla: {
             price_old: number;
             change: number;
             last_update: string;
             price: number;
+            symbol: string;
+            color: string;
         };
     };
 }
@@ -37,31 +40,30 @@ export default function Monitores() {
         getDollarParallel();
     }, []);
 
-    return (
-        <div className="flex flex-col h-screen w-full mx-auto p-4 space-y-4 bg-[#f5f5f5] ">
-            <NavigationTabs />
-            {dollarParallel ? (
-                <div className="space-y-4 flex-grow">
-                    <MonitorCard 
-                        name="Dólar BCV"
-                        currentPrice={dollarParallel.monitors.bcv.price}
-                        oldPrice={dollarParallel.monitors.bcv.price_old}
-                        change={dollarParallel.monitors.bcv.change}
-                        lastUpdate={dollarParallel.monitors.bcv.last_update}
-                        showNextPrice={true}
-                    />
-                    
-                    <MonitorCard 
-                        name="Dólar EnParalelo"
-                        currentPrice={dollarParallel.monitors.enparalelovzla.price_old}
-                        oldPrice={dollarParallel.monitors.enparalelovzla.price}
-                        change={dollarParallel.monitors.enparalelovzla.change}
-                        lastUpdate={dollarParallel.monitors.enparalelovzla.last_update}
-                    />
-                </div>
-            ) : (
-                <p className="text-center">Cargando datos...</p>
-            )}
+    return dollarParallel ? (
+        <div className="space-y-4 flex-grow">
+            <MonitorCard 
+                name="Dólar BCV"
+                currentPrice={dollarParallel.monitors.bcv.price}
+                oldPrice={dollarParallel.monitors.bcv.price_old}
+                change={dollarParallel.monitors.bcv.change}
+                lastUpdate={dollarParallel.monitors.bcv.last_update}
+                showNextPrice={true}
+                symbol={dollarParallel.monitors.bcv.symbol}
+                color={dollarParallel.monitors.bcv.color}
+            />
+            
+            <MonitorCard 
+                name="Dólar EnParalelo"
+                currentPrice={dollarParallel.monitors.enparalelovzla.price_old}
+                oldPrice={dollarParallel.monitors.enparalelovzla.price}
+                change={dollarParallel.monitors.enparalelovzla.change}
+                lastUpdate={dollarParallel.monitors.enparalelovzla.last_update.trim().replace(/,$/, '')}
+                symbol={dollarParallel.monitors.enparalelovzla.symbol}
+                color={dollarParallel.monitors.enparalelovzla.color}
+            />
         </div>
+    ) : (
+        <p className="text-center">Cargando datos...</p>
     );
 }

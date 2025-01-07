@@ -7,6 +7,8 @@ interface MonitorData {
     change: number;
     lastUpdate: string;
     showNextPrice?: boolean;
+    symbol: string;
+    color: string;
 }
 
 export const MonitorCard = ({ 
@@ -15,18 +17,26 @@ export const MonitorCard = ({
     oldPrice, 
     change, 
     lastUpdate,
-    showNextPrice = false 
+    showNextPrice = false,
+    symbol,
+    color
 }: MonitorData) => {
     const priceIncreased = currentPrice < oldPrice;
     
+    const PriceSymbol = ({ symbol, color }: { symbol: string, color: string }) => (
+        <span className={`${color === 'green' ? 'text-green-500' : 'text-red-500'}`}>
+            {symbol}
+        </span>
+    );
+
     return (
-        <Card className="p-1 shadow-xl">
+        <Card className="shadow-xl">
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <span className="font-semibold text-lg">{name}</span>
                     <p className={priceIncreased ? 'text-red-500' : 'text-green-500'}>
                         <span className="font-semibold text-lg">
-                            {showNextPrice ? oldPrice : currentPrice} Bs.
+                            {showNextPrice ? currentPrice : oldPrice} Bs.
                         </span>
                     </p>
                 </div>
@@ -35,20 +45,26 @@ export const MonitorCard = ({
                 <div className="text-sm text-gray-600 -mt-2">
                     <p className="text-gray-600">
                         <span>variacion del precio: </span>
-                        <span className={change > 0 ? 'text-red-500' : 'text-green-500'}>
-                            {change} {change > 0 ? '↑' : '↓'}
+                        <span className={`text-${color}-500`}>
+                            <span className="font-semibold">{change}</span> <PriceSymbol symbol={symbol} color={color} />
                         </span>
                     </p>
                     <p>
-                        <span>{showNextPrice ? 'próximo precio' : 'precio anterior'}: </span>
-                        <span className={priceIncreased ? 'text-red-500' : 'text-green-500'}>
-                            {showNextPrice ? currentPrice : oldPrice}
+                        <span>{showNextPrice ? 'precio anterior' : 'precio anterior'}: </span>
+                        <span className='font-semibold'>
+                            {showNextPrice ? oldPrice : currentPrice}
                         </span>
                     </p>
                     <p>
-                        <span>{showNextPrice ? 'próxima actualización' : 'fecha de actualización'}: </span>
+                        <span>{showNextPrice ? 'fecha de actualización' : 'fecha de actualización'}: </span>
                         <span className="font-semibold">
-                            {lastUpdate.split(' ')[0]}
+                            {lastUpdate.split(',')[0].trim()}
+                        </span>
+                    </p>
+                    <p>
+                        <span>hora de actualización: </span>
+                        <span className="font-semibold">
+                            {lastUpdate.split(',')[1].trim()}
                         </span>
                     </p>
                 </div>

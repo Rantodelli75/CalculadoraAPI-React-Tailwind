@@ -6,7 +6,7 @@ interface NavigationTabsProps {
     className?: string;
 }
 
-export const NavigationTabs = ({ defaultValue = "monitores", className = "w-full" }: NavigationTabsProps) => {
+export const NavigationTabs = ({ className = "w-full" }: NavigationTabsProps) => {
     const navigate = useNavigate();
     const location = useLocation();
 
