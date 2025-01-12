@@ -58,7 +58,7 @@ export default function Calculator() {
                       <CardHeader>
                         <div className="flex justify-between items-center">
                             <span className="font-semibold text-lg">Dólar BCV</span>
-                            <span className="font-semibold text-lg">{dollarParallel.monitors.bcv.price_old}$</span>
+                            <span className="font-semibold text-lg">{dollarParallel.monitors.bcv.price_old}Bs.</span>
                         </div>
                       </CardHeader>
                       <CardContent>
@@ -85,7 +85,7 @@ export default function Calculator() {
                       <CardHeader>
                         <div className="flex justify-between items-center">
                             <span className="font-semibold text-lg">Dólar EnParalelo</span>
-                            <span className="font-semibold text-lg">{dollarParallel.monitors.enparalelovzla.price_old}$</span>
+                            <span className="font-semibold text-lg">{dollarParallel.monitors.enparalelovzla.price_old}Bs.</span>
                         </div>
                       </CardHeader>
                       <CardContent>
