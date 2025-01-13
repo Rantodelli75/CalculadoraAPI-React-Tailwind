@@ -57,27 +57,27 @@ export default function Calculator() {
   }, [selectedMonitor]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9,]/g, "")
-    setAmount(value)
+    const value = e.target.value.replace(/[^0-9.,]/g, "");
+    setAmount(value);
     
     if (!value) {
-      setConvertedAmount("")
-      return
+      setConvertedAmount("");
+      return;
     }
     
-    const numericValue = Number(value.replace(/,/g, ""))
+    const numericValue = parseFloat(value.replace(/,/g, "."));
     if (fromCurrency === "USD") {
       const result = (numericValue * exchangeRate).toLocaleString("es-VE", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })
-      setConvertedAmount(result)
+      });
+      setConvertedAmount(result);
     } else {
       const result = (numericValue / exchangeRate).toLocaleString("es-VE", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })
-      setConvertedAmount(result)
+      });
+      setConvertedAmount(result);
     }
   }
 
