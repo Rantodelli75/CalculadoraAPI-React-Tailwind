@@ -21,7 +21,6 @@ export const MonitorCard = ({
     symbol,
     color
 }: MonitorData) => {
-    const priceIncreased = currentPrice < oldPrice;
     
     const PriceSymbol = ({ symbol, color }: { symbol: string, color: string }) => (
         <span className={`${color === 'green' ? 'text-green-500' : 'text-red-500'}`}>
@@ -34,7 +33,7 @@ export const MonitorCard = ({
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <span className="font-semibold text-lg">{name}</span>
-                    <p className={priceIncreased ? 'text-red-500' : 'text-green-500'}>
+                    <p className={`text-${color}-500`}>
                         <span className="font-semibold text-lg">
                             {showNextPrice ? currentPrice : oldPrice} Bs.
                         </span>

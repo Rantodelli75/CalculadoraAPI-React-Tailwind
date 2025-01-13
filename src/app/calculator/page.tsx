@@ -12,9 +12,15 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons'
 
-interface DollarResponse {
+
+
+interface DollarParallel {
   monitors: {
     bcv: {
+      price: number;
+      last_update: string;
+    }
+    enparalelovzla: {
       price: number;
       last_update: string;
     }
@@ -23,25 +29,32 @@ interface DollarResponse {
 
 export default function Calculator() {
   const [amount, setAmount] = useState("")
-  const [fromCurrency, setFromCurrency] = useState("USD")
-  const [toCurrency, setToCurrency] = useState("VES")
+  const [fromCurrency, setFromCurrency] = useState("VES")
+  const [toCurrency, setToCurrency] = useState("USD")
   const [convertedAmount, setConvertedAmount] = useState("")
   const [exchangeRate, setExchangeRate] = useState(0)
   const [lastUpdate, setLastUpdate] = useState("")
+  const [selectedMonitor, setSelectedMonitor] = useState("bcv")
 
   useEffect(() => {
     const getExchangeRate = async () => {
       try {
-        const data = await fetchDollarParallel() as DollarResponse;
-        setExchangeRate(data.monitors.bcv.price);
-        setLastUpdate(data.monitors.bcv.last_update);
+        const data = await fetchDollarParallel() as DollarParallel;
+        setExchangeRate(selectedMonitor === 'bcv' ? 
+          data.monitors.bcv.price : 
+          data.monitors.enparalelovzla.price
+        );
+        setLastUpdate(selectedMonitor === 'bcv' ? 
+          data.monitors.bcv.last_update : 
+          data.monitors.enparalelovzla.last_update
+        );
       } catch (error) {
         console.error('Error fetching exchange rate:', error);
       }
     };
 
     getExchangeRate();
-  }, []);
+  }, [selectedMonitor]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9,]/g, "")
@@ -115,17 +128,36 @@ export default function Calculator() {
     }
   };
 
+  const monitores = [
+    { value: 'bcv', label: 'BCV' },
+    { value: 'enparalelovzla', label: 'EnParalelo' }
+  ]
+
   return (
-    <div className="min-h-[100vh] flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-[calc(100vh-100px)] flex items-center justify-center p-4 overflow-hidden">
       <Card className="w-full max-w-3xl shadow-xl">
         <CardContent className="p-6">
           <div className="grid gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Cantidad</label>
+                <label className="text-sm font-medium text-muted-foreground">Selecciona el tipo de monitor</label>
+                <Select value={selectedMonitor} onValueChange={setSelectedMonitor}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccionar monitor">
+                      {monitores.find(m => m.value === selectedMonitor)?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monitores.map((monitor) => (
+                      <SelectItem key={monitor.value} value={monitor.value}>
+                        {monitor.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <div className="relative">
                   <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring">
-                    <span className="pl-3 text-xl">$</span>
+                    <span className="pl-3 text-xl">{fromCurrency === 'USD' ? '$' : 'Bs'}</span>
                     <input
                       type="text"
                       value={amount}
@@ -174,7 +206,7 @@ export default function Calculator() {
                 <label className="text-sm font-medium text-muted-foreground">Convertido a</label>
                 <div className="relative">
                   <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring">
-                    <span className="pl-3 text-xl">$</span>
+                    <span className="pl-3 text-xl">{toCurrency === 'USD' ? '$' : 'Bs'}</span>
                     <input
                       type="text"
                       value={convertedAmount}

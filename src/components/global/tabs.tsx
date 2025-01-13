@@ -6,13 +6,15 @@ interface NavigationTabsProps {
     className?: string;
 }
 
-export const NavigationTabs = ({ className = "w-full" }: NavigationTabsProps) => {
+export const NavigationTabs = ({ className = "w-full bg-white rounded-lg shadow-inner" }: NavigationTabsProps) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const currentTab = location.pathname;
+
     return (
         <Tabs 
-            defaultValue={location.pathname === '/calculator' ? 'calculadora' : 'monitores'} 
+            defaultValue={currentTab === '/calculator' ? 'calculadora' : 'monitores'} 
             className={className}
             onValueChange={(value) => {
                 if (value === 'calculadora') {
