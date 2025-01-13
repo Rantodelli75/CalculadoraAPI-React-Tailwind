@@ -44,27 +44,27 @@ export default function Calculator() {
   }, []);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9,]/g, "")
-    setAmount(value)
+    const value = e.target.value.replace(/[^0-9.,]/g, "");
+    setAmount(value);
     
     if (!value) {
-      setConvertedAmount("")
-      return
+      setConvertedAmount("");
+      return;
     }
     
-    const numericValue = Number(value.replace(/,/g, ""))
+    const numericValue = parseFloat(value.replace(/,/g, "."));
     if (fromCurrency === "USD") {
       const result = (numericValue * exchangeRate).toLocaleString("es-VE", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })
-      setConvertedAmount(result)
+      });
+      setConvertedAmount(result);
     } else {
       const result = (numericValue / exchangeRate).toLocaleString("es-VE", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })
-      setConvertedAmount(result)
+      });
+      setConvertedAmount(result);
     }
   }
 
@@ -116,7 +116,7 @@ export default function Calculator() {
   };
 
   return (
-    <div className="min-h-[100vh] flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-[70vh] flex items-center justify-center p-4 overflow-hidden">
       <Card className="w-full max-w-3xl shadow-xl">
         <CardContent className="p-6">
           <div className="grid gap-6">
