@@ -134,7 +134,7 @@ export default function Calculator() {
   ]
 
   return (
-    <div className="min-h-[calc(100vh-100px)] flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4 overflow-hidden">
       <Card className="w-full max-w-3xl shadow-xl">
         <CardContent className="p-6">
           <div className="grid gap-6">
