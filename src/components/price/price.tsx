@@ -9,6 +9,8 @@ interface MonitorData {
     showNextPrice?: boolean;
     symbol: string;
     color: string;
+    showCalculator?: boolean;
+    calculatorPrice?: number;
 }
 
 export const MonitorCard = ({ 

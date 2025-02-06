@@ -40,6 +40,7 @@ export default function Monitores() {
         getDollarParallel();
     }, []);
 
+
     return dollarParallel ? (
         <div className="space-y-4 flex-grow">
             <MonitorCard 
@@ -61,6 +62,23 @@ export default function Monitores() {
                 lastUpdate={dollarParallel.monitors.enparalelovzla.last_update.trim().replace(/,$/, '')}
                 symbol={dollarParallel.monitors.enparalelovzla.symbol}
                 color={dollarParallel.monitors.enparalelovzla.color}
+            />
+
+            <MonitorCard 
+                name="Dólar Promedio"
+                currentPrice={Number(((dollarParallel.monitors.enparalelovzla.price_old + dollarParallel.monitors.bcv.price_old) / 2).toFixed(2))}
+                oldPrice={Number(((dollarParallel.monitors.enparalelovzla.price + dollarParallel.monitors.bcv.price) / 2).toFixed(2))}
+                change={Number(((dollarParallel.monitors.enparalelovzla.change + dollarParallel.monitors.bcv.change) / 2).toFixed(2))}
+                lastUpdate={new Date().toLocaleString('es-VE')}
+                symbol={dollarParallel.monitors.enparalelovzla.symbol}
+                color={
+                    ((dollarParallel.monitors.enparalelovzla.price_old + dollarParallel.monitors.bcv.price) / 2) >
+                    ((dollarParallel.monitors.enparalelovzla.price + dollarParallel.monitors.bcv.price_old) / 2)
+                    ? 'green'
+                    : 'red'
+                }
+                showCalculator={true}
+                calculatorPrice={Number(((dollarParallel.monitors.enparalelovzla.price_old + dollarParallel.monitors.bcv.price) / 2).toFixed(2))}
             />
         </div>
     ) : (

@@ -24,6 +24,10 @@ interface DollarParallel {
       price: number;
       last_update: string;
     }
+    promedio: {
+      price: number;
+      last_update: string;
+    }
   }
 }
 
@@ -36,18 +40,35 @@ export default function Calculator() {
   const [lastUpdate, setLastUpdate] = useState("")
   const [selectedMonitor, setSelectedMonitor] = useState("bcv")
 
+  const monitores = [
+    { value: 'bcv', label: 'BCV' },
+    { value: 'enparalelovzla', label: 'EnParalelo' },
+    { value: 'promedio', label: 'Promedio' }
+  ]
+
   useEffect(() => {
     const getExchangeRate = async () => {
       try {
         const data = await fetchDollarParallel() as DollarParallel;
-        setExchangeRate(selectedMonitor === 'bcv' ? 
-          data.monitors.bcv.price : 
-          data.monitors.enparalelovzla.price
-        );
-        setLastUpdate(selectedMonitor === 'bcv' ? 
-          data.monitors.bcv.last_update : 
-          data.monitors.enparalelovzla.last_update
-        );
+        let rate;
+        switch(selectedMonitor) {
+          case 'bcv':
+            rate = data.monitors.bcv.price;
+            setLastUpdate(data.monitors.bcv.last_update);
+            break;
+          case 'enparalelovzla':
+            rate = data.monitors.enparalelovzla.price;
+            setLastUpdate(data.monitors.enparalelovzla.last_update);
+            break;
+          case 'promedio':
+            rate = Number(((data.monitors.enparalelovzla.price + data.monitors.bcv.price) / 2).toFixed(2));
+            setLastUpdate(new Date().toLocaleString('es-VE'));
+            break;
+          default:
+            rate = data.monitors.bcv.price;
+            setLastUpdate(data.monitors.bcv.last_update);
+        }
+        setExchangeRate(rate);
       } catch (error) {
         console.error('Error fetching exchange rate:', error);
       }
@@ -127,11 +148,6 @@ export default function Calculator() {
         setConvertedAmount(result);
     }
   };
-
-  const monitores = [
-    { value: 'bcv', label: 'BCV' },
-    { value: 'enparalelovzla', label: 'EnParalelo' }
-  ]
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4 overflow-hidden">
