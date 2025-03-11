@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchDollarParallel } from '@/api/api';
+import { fetchDollarParallel } from '@/api/apiDollar';
 import { MonitorCard } from '@/components/price/price';
 
 // Define un tipo para la estructura de los datos que esperas
@@ -44,7 +44,7 @@ export default function Monitores() {
     return dollarParallel ? (
         <div className="space-y-4 flex-grow">
             <MonitorCard 
-                name="Dólar BCV"
+                name="$ BCV"
                 currentPrice={dollarParallel.monitors.bcv.price}
                 oldPrice={dollarParallel.monitors.bcv.price_old}
                 change={dollarParallel.monitors.bcv.change}
@@ -55,7 +55,7 @@ export default function Monitores() {
             />
             
             <MonitorCard 
-                name="Dólar EnParalelo"
+                name="$ EnParalelo"
                 currentPrice={dollarParallel.monitors.enparalelovzla.price_old}
                 oldPrice={dollarParallel.monitors.enparalelovzla.price}
                 change={dollarParallel.monitors.enparalelovzla.change}
@@ -65,7 +65,7 @@ export default function Monitores() {
             />
 
             <MonitorCard 
-                name="Dólar Promedio"
+                name="$ Promedio"
                 currentPrice={Number(((dollarParallel.monitors.enparalelovzla.price_old + dollarParallel.monitors.bcv.price_old) / 2).toFixed(2))}
                 oldPrice={Number(((dollarParallel.monitors.enparalelovzla.price + dollarParallel.monitors.bcv.price) / 2).toFixed(2))}
                 change={Number(((dollarParallel.monitors.enparalelovzla.change + dollarParallel.monitors.bcv.change) / 2).toFixed(2))}
@@ -82,6 +82,16 @@ export default function Monitores() {
             />
         </div>
     ) : (
-        <p className="text-center">Cargando datos...</p>
+        <div className="flex justify-center">
+            <div className="px-0.5">
+                <span className="w-3 h-3 rounded-full inline-block bg-red-500 cursor-pointer animate-bounce delay-100"></span>
+            </div>
+            <div className="px-0.5">
+                <span className="w-3 h-3 rounded-full inline-block bg-yellow-400 cursor-pointer animate-bounce delay-150"></span>
+            </div>
+            <div className="px-0.5">
+                <span className="w-3 h-3 rounded-full inline-block bg-green-500 cursor-pointer animate-bounce delay-200"></span>
+            </div>
+        </div>
     );
 }

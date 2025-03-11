@@ -33,14 +33,17 @@ export const MonitorCard = ({
     return (
         <Card className="shadow-xl">
             <CardHeader>
-                <div className="flex justify-between items-center">
+            <div className="flex">
+                
+                <div className="flex justify-between">
                     <span className="font-semibold text-lg">{name}</span>
-                    <p className={`text-${color}-500`}>
-                        <span className="font-semibold text-lg">
+                    <p className={`text-${color}-500 mr-0`}>
+                        <span className="font-semibold text-lg ml-2 mr-0">
                             {showNextPrice ? currentPrice : oldPrice} Bs.
                         </span>
                     </p>
                 </div>
+            </div>
             </CardHeader>
             <CardContent>
                 <div className="text-sm text-gray-600 -mt-2">
@@ -57,17 +60,12 @@ export const MonitorCard = ({
                         </span>
                     </p>
                     <p>
-                        <span>{showNextPrice ? 'fecha de actualización' : 'fecha de actualización'}: </span>
+                        <span>{showNextPrice ? 'actualización' : 'actualización'}: </span>
                         <span className="font-semibold">
-                            {lastUpdate.split(',')[0].trim()}
+                            {lastUpdate}
                         </span>
                     </p>
-                    <p>
-                        <span>hora de actualización: </span>
-                        <span className="font-semibold">
-                            {lastUpdate.split(',')[1].trim()}
-                        </span>
-                    </p>
+                    
                 </div>
             </CardContent>
         </Card>
