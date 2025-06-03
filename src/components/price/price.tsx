@@ -25,50 +25,51 @@ export const MonitorCard = ({
   symbol,
   color,
 }: MonitorData) => {
-  const isPositive = symbol === "+" || color === "green"
-  const displayCurrentPrice = showNextPrice ? currentPrice : oldPrice
-  const displayPreviousPrice = showNextPrice ? oldPrice : currentPrice
+    
+    const PriceSymbol = ({ symbol, color }: { symbol: string, color: string }) => (
+        <span className={`${color === 'green' ? 'text-green-500' : 'text-red-500'}`}>
+            {symbol}
+        </span>
+    );
 
-  // Separar fecha y hora
-  const dateParts = lastUpdate.split(",")
-  const updateDate = dateParts[0].trim()
-  const updateTime = dateParts.length > 1 ? dateParts[1].trim() : ""
-
-  return (
-    <Card className="w-full shadow-lg border-0">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <span className="text-xl font-semibold text-gray-800">{name}</span>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="text-sm font-semibold text-gray-500">Precio Actual</p>
-              <p className={cn("text-3xl font-bold tracking-tight", isPositive ? "text-emerald-600" : "text-rose-600")}>{displayCurrentPrice.toLocaleString('es-Ve')} Bs.</p>
+    return (
+        <Card className="shadow-xl">
+            <CardHeader>
+            <div className="flex">
+                
+                <div className="flex justify-between">
+                    <span className="font-semibold text-lg">{name}</span>
+                    <p className={`text-${color}-500 mr-0`}>
+                        <span className="font-semibold text-lg ml-2 mr-0">
+                            {showNextPrice ? currentPrice : oldPrice} Bs.
+                        </span>
+                    </p>
+                </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-500">Precio Anterior</p>
-              <p className="text-xl font-semibold text-gray-600">{displayPreviousPrice.toLocaleString('es-Ve')} Bs.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <div
-              className={cn("flex items-center text-sm font-medium", isPositive ? "text-emerald-600" : "text-rose-600")}
-            >
-              {isPositive ? <ArrowUp className="h-4 w-4 mr-1" /> : <ArrowDown className="h-4 w-4 mr-1" />}
-              <span>
-                {Math.abs(change)} {symbol}
-              </span>
-            </div>
-            <div className="text-xs text-gray-500">
-              Actualizado: {updateDate}, {updateTime}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
+            </CardHeader>
+            <CardContent>
+                <div className="text-sm text-gray-600 -mt-2">
+                    <p className="text-gray-600">
+                        <span>variacion del precio: </span>
+                        <span className={`text-${color}-500`}>
+                            <span className="font-semibold">{change}</span> <PriceSymbol symbol={symbol} color={color} />
+                        </span>
+                    </p>
+                    <p>
+                        <span>{showNextPrice ? 'precio anterior' : 'precio anterior'}: </span>
+                        <span className='font-semibold'>
+                            {showNextPrice ? oldPrice : currentPrice}
+                        </span>
+                    </p>
+                    <p>
+                        <span>{showNextPrice ? 'actualización' : 'actualización'}: </span>
+                        <span className="font-semibold">
+                            {lastUpdate}
+                        </span>
+                    </p>
+                    
+                </div>
+            </CardContent>
+        </Card>
+    )
 }
