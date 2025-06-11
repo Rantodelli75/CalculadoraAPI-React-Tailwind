@@ -24,17 +24,17 @@ export const NavigationTabs = ({ className = "w-full bg-white rounded-lg shadow-
                 }
             }}
         >
-            <TabsList className="flex w-[#fdfefe] bg-white text-black hover:text-black shadow-inner">
+            <TabsList className="flex w-[#fdfefe] bg-white text-black hover:text-black shadow-inner bg-[#1E2329]">
                 <TabsTrigger 
                     value="monitores" 
-                    className="flex-1 bg-white data-[state=active]:text-white font-semibold data-[state=active]:bg-black
+                    className="flex-1 bg-[#1E2329] text-white data-[state=active]:text-black font-semibold data-[state=active]:bg-[#f0b90b]
                      text-center data-[state=active]:shadow-lg"
                 >
                     Monitores
                 </TabsTrigger>
                 <TabsTrigger 
                     value="calculadora" 
-                    className="flex-1 bg-white data-[state=active]:text-white font-semibold data-[state=active]:bg-black 
+                    className="flex-1 bg-[#1E2329] text-white data-[state=active]:text-black font-semibold data-[state=active]:bg-[#f0b90b]
                     text-center data-[state=active]:shadow-lg"
                 >
                     Calculadora

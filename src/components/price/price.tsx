@@ -1,5 +1,5 @@
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { ArrowDown, ArrowUp } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { TrendingUp, TrendingDown, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface MonitorData {
@@ -25,51 +25,60 @@ export const MonitorCard = ({
   symbol,
   color,
 }: MonitorData) => {
-    
-    const PriceSymbol = ({ symbol, color }: { symbol: string, color: string }) => (
-        <span className={`${color === 'green' ? 'text-green-500' : 'text-red-500'}`}>
-            {symbol}
-        </span>
-    );
+  const isPositive = color === "green"
+  const displayPrice = showNextPrice ? currentPrice : oldPrice
+  const previousPrice = showNextPrice ? oldPrice : currentPrice
 
-    return (
-        <Card className="shadow-xl">
-            <CardHeader>
-            <div className="flex">
-                
-                <div className="flex justify-between">
-                    <span className="font-semibold text-lg">{name}</span>
-                    <p className={`text-${color}-500 mr-0`}>
-                        <span className="font-semibold text-lg ml-2 mr-0">
-                            {showNextPrice ? currentPrice : oldPrice} Bs.
-                        </span>
-                    </p>
-                </div>
+  const PriceSymbol = ({ symbol, color }: { symbol: string; color: string }) => (
+    <span className={cn("font-medium", color === "green" ? "text-[#0ECB81]" : "text-[#F6465D]")}>{symbol}</span>
+  )
+
+  return (
+    <Card className="bg-[#1E2329] border-[#2B3139] hover:border-[#F0B90B]/30 transition-all duration-200">
+      <CardContent className="p-6">
+        {/* Header Section */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl font-semibold text-white">{name}</h3>
+            <div
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded text-sm font-medium",
+                isPositive ? "bg-[#0ECB81]/10 text-[#0ECB81]" : "bg-[#F6465D]/10 text-[#F6465D]",
+              )}
+            >
+              {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              {isPositive ? "+" : ""}
+              {change}
+              <PriceSymbol symbol={symbol} color={color} />
             </div>
-            </CardHeader>
-            <CardContent>
-                <div className="text-sm text-gray-600 -mt-2">
-                    <p className="text-gray-600">
-                        <span>variacion del precio: </span>
-                        <span className={`text-${color}-500`}>
-                            <span className="font-semibold">{change}</span> <PriceSymbol symbol={symbol} color={color} />
-                        </span>
-                    </p>
-                    <p>
-                        <span>{showNextPrice ? 'precio anterior' : 'precio anterior'}: </span>
-                        <span className='font-semibold'>
-                            {showNextPrice ? oldPrice : currentPrice}
-                        </span>
-                    </p>
-                    <p>
-                        <span>{showNextPrice ? 'actualización' : 'actualización'}: </span>
-                        <span className="font-semibold">
-                            {lastUpdate}
-                        </span>
-                    </p>
-                    
-                </div>
-            </CardContent>
-        </Card>
-    )
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-white">
+              {displayPrice} <span className="text-lg text-[#848E9C]">Bs.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Details Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="text-[#848E9C]">Variación del precio: </span>
+            <span className={cn("font-semibold", isPositive ? "text-[#0ECB81]" : "text-[#F6465D]")}>
+              {isPositive ? "+" : ""}
+              {change}
+            </span>
+          </div>
+          <div>
+            <span className="text-[#848E9C]">Precio anterior: </span>
+            <span className="text-white font-medium">{previousPrice}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3 text-[#848E9C]" />
+            <span className="text-[#848E9C]">Actualización: </span>
+            <span className="text-white text-xs font-medium">{lastUpdate}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }

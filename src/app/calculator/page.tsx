@@ -151,14 +151,14 @@ export default function Calculator() {
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4 overflow-hidden">
-      <Card className="w-full max-w-3xl shadow-xl">
+      <Card className="w-full max-w-3xl shadow-xl bg-[#1E2329]">
         <CardContent className="p-6">
           <div className="grid gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Selecciona el tipo de monitor</label>
                 <Select value={selectedMonitor} onValueChange={setSelectedMonitor}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full text-white">
                     <SelectValue placeholder="Seleccionar monitor">
                       {monitores.find(m => m.value === selectedMonitor)?.label}
                     </SelectValue>
@@ -172,20 +172,20 @@ export default function Calculator() {
                   </SelectContent>
                 </Select>
                 <div className="relative">
-                  <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring">
-                    <span className="pl-3 text-xl">{fromCurrency === 'USD' ? '$' : 'Bs'}</span>
+                  <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring text-white">
+                    <span className="pl-3 text-xl text-white">{fromCurrency === 'USD' ? '$' : 'Bs'}</span>
                     <input
                       type="text"
                       value={amount}
                       onChange={handleAmountChange}
-                      className="flex h-14 w-full rounded-md bg-transparent px-3 py-2 text-xl ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-14 w-full text-white rounded-md bg-transparent px-3 py-2 text-xl ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <Select value={fromCurrency} onValueChange={(value) => handleCurrencyChange(value, 'from')}>
-                      <SelectTrigger className="w-[110px] border-0 focus:ring-0">
+                      <SelectTrigger className="w-[110px] border-0 focus:ring-0 text-white">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{fromCurrency === 'USD' ? '🇺🇸' : '🇻🇪'}</span>
-                            <span>{fromCurrency === 'USD' ? 'USD' : 'VES'}</span>
+                            <span className="text-lg text-white">{fromCurrency === 'USD' ? '🇺🇸' : '🇻🇪'}</span>
+                            <span className="text-white">{fromCurrency === 'USD' ? 'USD' : 'VES'}</span>
                           </div>
                         </SelectValue>
                       </SelectTrigger>
@@ -210,11 +210,11 @@ export default function Calculator() {
 
               <div className="flex items-center justify-center">
                 <Button 
-                    className="w-full"
+                    className="w-full bg-[#f0b90b]"
                     size="icon"
                     onClick={handleCurrencySwitch}
                 >
-                    <FontAwesomeIcon icon={faArrowsUpDown} className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faArrowsUpDown} className="h-4 w-4 text-black" />
                 </Button>
               </div>
 
@@ -222,7 +222,7 @@ export default function Calculator() {
                 <label className="text-sm font-medium text-muted-foreground">Convertido a</label>
                 <div className="relative">
                   <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring">
-                    <span className="pl-3 text-xl">{toCurrency === 'USD' ? '$' : 'Bs'}</span>
+                    <span className="pl-3 text-xl text-white">{toCurrency === 'USD' ? '$' : 'Bs'}</span>
                     <input
                       type="text"
                       value={convertedAmount}
@@ -230,25 +230,25 @@ export default function Calculator() {
                       className="flex h-14 w-full rounded-md bg-transparent px-3 py-2 text-xl ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <Select value={toCurrency} onValueChange={(value) => handleCurrencyChange(value, 'to')}>
-                      <SelectTrigger className="w-[110px] border-0 focus:ring-0">
+                      <SelectTrigger className="w-[110px] border-0 focus:ring-0 text-white">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{toCurrency === 'USD' ? '🇺🇸' : '🇻🇪'}</span>
-                            <span>{toCurrency === 'USD' ? 'USD' : 'VES'}</span>
+                            <span className="text-lg text-white">{toCurrency === 'USD' ? '🇺🇸' : '🇻🇪'}</span>
+                            <span className="text-white">{toCurrency === 'USD' ? 'USD' : 'VES'}</span>
                           </div>
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="USD">
                           <div className="flex items-center gap-2">
-                            <span>🇺🇸</span>
-                            <span>USD</span>
+                            <span className="text-white">🇺🇸</span>
+                            <span className="text-white">USD</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="VES">
                           <div className="flex items-center gap-2">
-                            <span>🇻🇪</span>
-                            <span>VES</span>
+                            <span className="text-white">🇻🇪</span>
+                            <span className="text-white">VES</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -261,9 +261,9 @@ export default function Calculator() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="space-y-1">
                 <p className="text-sm">
-                  <span className="font-medium">1 USD = </span>
-                  <span className="text-primary font-medium">{exchangeRate.toLocaleString("es-VE")} </span>
-                  <span className="font-medium">VES</span>
+                  <span className="font-medium text-white">1 USD = </span>
+                  <span className="text-primary font-medium text-white">{exchangeRate.toLocaleString("es-VE")} </span>
+                  <span className="font-medium text-white">VES</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Tipo de valorización en la fecha {lastUpdate}

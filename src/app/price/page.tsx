@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-
-import { fetchDollarParallel } from "@/api/api";
-
+import { fetchDollarParallel } from "@/api/apiDollar";
 import { MonitorCard } from "@/components/price/price";
-
 import { Loader } from "lucide-react";
 
 // Definicion de la interfaz de los datos que llegan de la API
@@ -12,29 +9,18 @@ interface DollarParallel {
   monitors: {
     bcv: {
       price_old: number;
-
       change: number;
-
       last_update: string;
-
       price: number;
-
       symbol: string;
-
       color: string;
     };
-
     enparalelovzla: {
       price_old: number;
-
       change: number;
-
       last_update: string;
-
       price: number;
-
       symbol: string;
-
       color: string;
     };
   };
@@ -49,13 +35,11 @@ export default function Monitores() {
     const getDollarParallel = async () => {
       try {
         const data = await fetchDollarParallel();
-
         setDollarParallel(data as DollarParallel);
       } catch (error) {
         console.error("Error fetching dollar parallel:", error);
       }
     };
-
     getDollarParallel();
   }, []);
 
@@ -65,26 +49,18 @@ export default function Monitores() {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader className="absolute" />
-
         <p className="text-center mt-12">Cargando datos...</p>
       </div>
     );
   }
 
   // Extraemos los precios y otros datos para las tarjetas
-
   const bcv = dollarParallel.monitors.bcv;
-
   const enParalelo = dollarParallel.monitors.enparalelovzla;
-
   const currentPriceBCV = bcv.price;
-
   const oldPriceBCV = bcv.price_old;
-
   const currentPriceEnParalelo = enParalelo.price_old;
-
   const oldPriceEnParalelo = enParalelo.price;
-
   const averageCurrentPrice = Number(
     ((oldPriceEnParalelo + oldPriceBCV) / 2).toFixed(2)
   );
@@ -100,7 +76,7 @@ export default function Monitores() {
   const averageColor = averageCurrentPrice > averageOldPrice ? "green" : "red";
 
   return (
-    <div className="space-y-4 flex-grow">
+    <div className="space-y-4 flex-grow max-w-[700px] mx-auto w-full">
       <MonitorCard
         name="Dólar BCV"
         currentPrice={currentPriceBCV}
