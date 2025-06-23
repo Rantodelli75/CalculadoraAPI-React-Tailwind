@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { fetchDollarParallel } from '@/api/apiDollar'
+import { fetchCurrencyData } from '@/api/apiDollar'
 import {
   Select,
   SelectContent,
@@ -14,21 +14,10 @@ import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons'
 
 
 
-interface DollarParallel {
-  monitors: {
-    bcv: {
-      price: number;
-      last_update: string;
-    }
-    enparalelovzla: {
-      price: number;
-      last_update: string;
-    }
-    promedio: {
-      price: number;
-      last_update: string;
-    }
-  }
+interface CurrencyRates {
+  usd: number;
+  eur: number;
+  lastUpdate: string;
 }
 
 export default function Calculator() {
@@ -36,46 +25,77 @@ export default function Calculator() {
   const [fromCurrency, setFromCurrency] = useState("VES")
   const [toCurrency, setToCurrency] = useState("USD")
   const [convertedAmount, setConvertedAmount] = useState("")
-  const [exchangeRate, setExchangeRate] = useState(0)
-  const [lastUpdate, setLastUpdate] = useState("")
-  const [selectedMonitor, setSelectedMonitor] = useState("bcv")
-
-  const monitores = [
-    { value: 'bcv', label: 'BCV' },
-    { value: 'enparalelovzla', label: 'EnParalelo' },
-    { value: 'promedio', label: 'Promedio' }
-  ]
+  const [rates, setRates] = useState<CurrencyRates>({
+    usd: 0,
+    eur: 0,
+    lastUpdate: ""
+  })
+  const [, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const getExchangeRate = async () => {
+    const getExchangeRates = async () => {
       try {
-        const data = await fetchDollarParallel() as DollarParallel;
-        let rate;
-        switch(selectedMonitor) {
-          case 'bcv':
-            rate = data.monitors.bcv.price;
-            setLastUpdate(data.monitors.bcv.last_update);
-            break;
-          case 'enparalelovzla':
-            rate = data.monitors.enparalelovzla.price;
-            setLastUpdate(data.monitors.enparalelovzla.last_update);
-            break;
-          case 'promedio':
-            rate = Number(((data.monitors.enparalelovzla.price + data.monitors.bcv.price) / 2).toFixed(2));
-            setLastUpdate(new Date().toLocaleString('es-VE'));
-            break;
-          default:
-            rate = data.monitors.bcv.price;
-            setLastUpdate(data.monitors.bcv.last_update);
-        }
-        setExchangeRate(rate);
+        setIsLoading(true);
+        const data = await fetchCurrencyData();
+        
+        // Obtener tasas de cambio de la API
+        const usdRate = data.monitors.usd.price;
+        const eurRate = data.monitors.eur.price;
+        const lastUpdate = data.monitors.usd.last_update;
+        
+        setRates({
+          usd: usdRate,
+          eur: eurRate,
+          lastUpdate
+        });
+        
       } catch (error) {
-        console.error('Error fetching exchange rate:', error);
+        console.error('Error al obtener tasas de cambio:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    getExchangeRate();
-  }, [selectedMonitor]);
+    getExchangeRates();
+    
+    // Actualizar cada minuto
+    const interval = setInterval(getExchangeRates, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const convertAmount = (value: string, from: string, to: string) => {
+    if (!value || !rates.usd || !rates.eur) return "";
+    
+    const numericValue = parseFloat(value.replace(/,/g, "."));
+    if (isNaN(numericValue)) return "";
+    
+    // Si las monedas son iguales, devolver el mismo valor
+    if (from === to) return numericValue.toLocaleString("es-VE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    
+    // Convertir a VES primero si es necesario
+    let vesAmount = numericValue;
+    if (from === "USD") {
+      vesAmount = numericValue * rates.usd;
+    } else if (from === "EUR") {
+      vesAmount = numericValue * rates.eur;
+    }
+    
+    // Convertir a la moneda destino
+    let result = vesAmount;
+    if (to === "USD") {
+      result = vesAmount / rates.usd;
+    } else if (to === "EUR") {
+      result = vesAmount / rates.eur;
+    }
+    
+    return result.toLocaleString("es-VE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9.,]/g, "");
@@ -86,44 +106,24 @@ export default function Calculator() {
       return;
     }
     
-    const numericValue = parseFloat(value.replace(/,/g, "."));
-    if (fromCurrency === "USD") {
-      const result = (numericValue * exchangeRate).toLocaleString("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-      setConvertedAmount(result);
-    } else {
-      const result = (numericValue / exchangeRate).toLocaleString("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-      setConvertedAmount(result);
-    }
+    const result = convertAmount(value, fromCurrency, toCurrency);
+    setConvertedAmount(result);
   }
 
   const handleCurrencyChange = (currency: string, type: 'from' | 'to') => {
+    // Actualizar el estado de la moneda
     if (type === 'from') {
-      setFromCurrency(currency)
-      setToCurrency(currency === 'USD' ? 'VES' : 'USD')
+      setFromCurrency(currency);
     } else {
-      setToCurrency(currency)
-      setFromCurrency(currency === 'USD' ? 'VES' : 'USD')
+      setToCurrency(currency);
     }
     
-    const numericValue = Number(amount.replace(/,/g, ""))
-    if (currency === "USD") {
-      const result = (numericValue / exchangeRate).toLocaleString("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
-      setConvertedAmount(result)
-    } else {
-      const result = (numericValue * exchangeRate).toLocaleString("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
-      setConvertedAmount(result)
+    // Si hay un monto, recalcular la conversión
+    if (amount) {
+      const newFrom = type === 'from' ? currency : fromCurrency;
+      const newTo = type === 'to' ? currency : toCurrency;
+      const result = convertAmount(amount, newFrom, newTo);
+      setConvertedAmount(result);
     }
   }
 
@@ -132,48 +132,24 @@ export default function Calculator() {
     setFromCurrency(toCurrency);
     setToCurrency(temp);
     
-    // Recalcular con la nueva dirección de conversión
-    const numericValue = Number(amount.replace(/,/g, ""))
-    if (toCurrency === "USD") { // Si USD está arriba, multiplicamos
-        const result = (numericValue * exchangeRate).toLocaleString("es-VE", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        setConvertedAmount(result);
-    } else { // Si VES está arriba, dividimos
-        const result = (numericValue / exchangeRate).toLocaleString("es-VE", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        setConvertedAmount(result);
+    // Intercambiar los montos
+    if (amount && convertedAmount) {
+      setAmount(convertedAmount.replace(/[^0-9.,]/g, ""));
+      setConvertedAmount(amount);
     }
   };
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4 overflow-hidden">
-      <Card className="w-full max-w-3xl shadow-xl bg-[#1E2329]">
+      <Card className="w-full max-w-xl shadow-xl bg-[#1E2329]">
         <CardContent className="p-6">
           <div className="grid gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 items-center">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Selecciona el tipo de monitor</label>
-                <Select value={selectedMonitor} onValueChange={setSelectedMonitor}>
-                  <SelectTrigger className="w-full text-white">
-                    <SelectValue placeholder="Seleccionar monitor">
-                      {monitores.find(m => m.value === selectedMonitor)?.label}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {monitores.map((monitor) => (
-                      <SelectItem key={monitor.value} value={monitor.value}>
-                        {monitor.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium text-muted-foreground">Selecciona el tipo de moneda</label>
                 <div className="relative">
                   <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring text-white">
-                    <span className="pl-3 text-xl text-white">{fromCurrency === 'USD' ? '$' : 'Bs'}</span>
+                    <span className="pl-3 text-xl text-white">{fromCurrency === 'USD' ? '$' : fromCurrency === 'EUR' ? '€' : 'Bs'}</span>
                     <input
                       type="text"
                       value={amount}
@@ -184,8 +160,8 @@ export default function Calculator() {
                       <SelectTrigger className="w-[110px] border-0 focus:ring-0 text-white">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            <span className="text-lg text-white">{fromCurrency === 'USD' ? '🇺🇸' : '🇻🇪'}</span>
-                            <span className="text-white">{fromCurrency === 'USD' ? 'USD' : 'VES'}</span>
+                            <span className="text-lg text-white">{fromCurrency === 'USD' ? '🇺🇸' : fromCurrency === 'EUR' ? '🇪🇺' : '🇻🇪'}</span>
+                            <span className="text-white">{fromCurrency === 'USD' ? 'USD' : fromCurrency === 'EUR' ? 'EUR' : 'VES'}</span>
                           </div>
                         </SelectValue>
                       </SelectTrigger>
@@ -194,6 +170,12 @@ export default function Calculator() {
                           <div className="flex items-center gap-2">
                             <span>🇺🇸</span>
                             <span>USD</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="EUR">
+                          <div className="flex items-center gap-2">
+                            <span>🇪🇺</span>
+                            <span>EUR</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="VES">
@@ -210,7 +192,7 @@ export default function Calculator() {
 
               <div className="flex items-center justify-center">
                 <Button 
-                    className="w-full bg-[#f0b90b]"
+                    className="w-full bg-[#f0b90b] hover:bg-[#f0b90b]"
                     size="icon"
                     onClick={handleCurrencySwitch}
                 >
@@ -222,33 +204,39 @@ export default function Calculator() {
                 <label className="text-sm font-medium text-muted-foreground">Convertido a</label>
                 <div className="relative">
                   <div className="flex items-center border rounded-md focus-within:ring-2 focus-within:ring-ring">
-                    <span className="pl-3 text-xl text-white">{toCurrency === 'USD' ? '$' : 'Bs'}</span>
+                    <span className="pl-3 text-xl text-white">{toCurrency === 'USD' ? '$' : toCurrency === 'EUR' ? '€' : 'Bs'}</span>
                     <input
                       type="text"
                       value={convertedAmount}
                       readOnly
-                      className="flex h-14 w-full rounded-md bg-transparent px-3 py-2 text-xl ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      className="text-white flex h-14 w-full rounded-md bg-transparent px-3 py-2 text-xl ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <Select value={toCurrency} onValueChange={(value) => handleCurrencyChange(value, 'to')}>
                       <SelectTrigger className="w-[110px] border-0 focus:ring-0 text-white">
                         <SelectValue>
                           <div className="flex items-center gap-2">
-                            <span className="text-lg text-white">{toCurrency === 'USD' ? '🇺🇸' : '🇻🇪'}</span>
-                            <span className="text-white">{toCurrency === 'USD' ? 'USD' : 'VES'}</span>
+                            <span className="text-lg text-white">{toCurrency === 'USD' ? '🇺🇸' : toCurrency === 'EUR' ? '🇪🇺' : '🇻🇪'}</span>
+                            <span className="text-white">{toCurrency === 'USD' ? 'USD' : toCurrency === 'EUR' ? 'EUR' : 'VES'}</span>
                           </div>
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="USD">
                           <div className="flex items-center gap-2">
-                            <span className="text-white">🇺🇸</span>
-                            <span className="text-white">USD</span>
+                            <span>🇺🇸</span>
+                            <span>USD</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="EUR">
+                          <div className="flex items-center gap-2">
+                            <span>🇪🇺</span>
+                            <span>EUR</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="VES">
                           <div className="flex items-center gap-2">
-                            <span className="text-white">🇻🇪</span>
-                            <span className="text-white">VES</span>
+                            <span>🇻🇪</span>
+                            <span>VES</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -262,11 +250,16 @@ export default function Calculator() {
               <div className="space-y-1">
                 <p className="text-sm">
                   <span className="font-medium text-white">1 USD = </span>
-                  <span className="text-primary font-medium text-white">{exchangeRate.toLocaleString("es-VE")} </span>
+                  <span className="text-primary font-medium text-white">{rates.usd.toLocaleString("es-VE")} </span>
+                  <span className="font-medium text-white">VES</span>
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium text-white">1 EUR = </span>
+                  <span className="text-primary font-medium text-white">{rates.eur.toLocaleString("es-VE")} </span>
                   <span className="font-medium text-white">VES</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Tipo de valorización en la fecha {lastUpdate}
+                  Tipo de valorización en la fecha {new Date(rates.lastUpdate).toLocaleString('es-VE')}
                 </p>
               </div>
             </div>
