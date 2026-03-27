@@ -23,21 +23,30 @@ export interface MonitorData {
 
 // No necesitamos la interfaz ApiResponse ya que usamos el tipo genérico de Axios
 
-const BASE_URL_TIPO_CAMBIO = 'https://pydolarve.org/api/v2/tipo-cambio';
+const BASE_URL_TIPO_CAMBIO = '/api/rates';
 
-// Interfaz para la respuesta de la API
+// Interfaz para la respuesta del endpoint de tasas
 interface ApiResponse {
-  [key: string]: {
-    price: string | number;
-    price_old?: string | number;
-    change?: string | number;
-    percent?: string | number;
-    color?: string;
-    symbol?: string;
-    title?: string;
-    last_update?: string;
+  usd?: {
+    rate: string | number;
+    date?: string;
+    bcv_date?: string;
+  };
+  eur?: {
+    rate: string | number;
+    date?: string;
+    bcv_date?: string;
   };
 }
+
+interface HistoryRateItem {
+  date: string;
+  rate: string | number;
+  bcv_date?: string;
+}
+
+const getHistoryEndpoint = (currency: 'USD' | 'EUR') =>
+  `/api/rates/history?currency=${currency}&days=30`;
 
 // Función para formatear la fecha
 const formatDate = (date: Date) => {
@@ -78,153 +87,129 @@ const getSymbolFromChange = (change: number): string => {
  * Obtiene los datos de monedas desde la API de tipo de cambio
  */
 export const fetchCurrencyData = async (): Promise<MonitorData> => {
-  console.log('Iniciando fetchCurrencyData...');
-  
   try {
-    // Hacer la petición a la API
-    console.log(`Haciendo petición a: ${BASE_URL_TIPO_CAMBIO}`);
-    const response = await axios.get<ApiResponse>(BASE_URL_TIPO_CAMBIO, {
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      timeout: 10000 // 10 segundos de timeout
-    });
-    
-    console.log('Respuesta recibida, status:', response.status);
-    const data = response.data;
+    const [currentRatesResponse, usdHistoryResponse, eurHistoryResponse] = await Promise.all([
+      axios.get<ApiResponse>(BASE_URL_TIPO_CAMBIO, {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        timeout: 10000 // 10 segundos de timeout
+      }),
+      axios.get<HistoryRateItem[]>(getHistoryEndpoint('USD'), {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        timeout: 10000
+      }),
+      axios.get<HistoryRateItem[]>(getHistoryEndpoint('EUR'), {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        timeout: 10000
+      })
+    ]);
+
+    const data = currentRatesResponse.data;
+    const usdHistory = usdHistoryResponse.data || [];
+    const eurHistory = eurHistoryResponse.data || [];
 
     if (!data) {
-      console.error('La respuesta de la API está vacía');
       throw new Error('No se pudieron obtener los datos de la API');
     }
 
-    console.log('Datos obtenidos de la API (primeros 500 caracteres):', JSON.stringify(data).substring(0, 500));
+    const getYesterdayRate = (history: HistoryRateItem[], currentRate: number): number => {
+      if (!Array.isArray(history) || history.length === 0) return currentRate;
+      const normalizedCurrent = Number(currentRate.toFixed(8));
+
+      for (const item of history) {
+        const rate = getNumericValue(item.rate);
+        if (rate > 0 && Number(rate.toFixed(8)) !== normalizedCurrent) {
+          return rate;
+        }
+      }
+
+      if (history.length > 1) {
+        const fallbackPrevious = getNumericValue(history[1]?.rate);
+        return fallbackPrevious > 0 ? fallbackPrevious : currentRate;
+      }
+
+      return currentRate;
+    };
+
+    const getLastUpdate = (history: HistoryRateItem[], fallbackDate?: string): string => {
+      const first = history[0];
+      return first?.bcv_date || first?.date || fallbackDate || new Date().toISOString();
+    };
 
     // Obtener la fecha y hora actual
     const now = new Date();
     const formattedDate = formatDate(now);
-    
-    // Interfaz para los datos de moneda de la API
-    interface CurrencyApiData {
-      price: string | number;
-      price_old?: string | number;
-      change?: string | number;
-      percent?: string | number;
-      color?: string;
-      symbol?: string;
-      title?: string;
-      last_update?: string;
-      image?: string;
-    }
+    const usdPrice = getNumericValue(data.usd?.rate);
+    const eurPrice = getNumericValue(data.eur?.rate);
 
-    // Tipo para el objeto de monitores
-    type MonitorsData = {
-      [key: string]: CurrencyApiData;
-    };
+    const buildCurrencyMonitor = (
+      currentPrice: number,
+      previousPrice: number,
+      title: string,
+      image: string,
+      lastUpdateRaw: string
+    ) => {
+      const safePrevious = previousPrice > 0 ? previousPrice : currentPrice;
+      const changeAmount = currentPrice - safePrevious;
+      const percent = safePrevious > 0 ? (changeAmount / safePrevious) * 100 : 0;
 
-    // Función para encontrar una moneda por su código o título
-    const findCurrencyData = (code: string, titleMatch: string): CurrencyApiData | null => {
-      // Verificar si data.monitors existe y es un objeto
-      if (data.monitors && typeof data.monitors === 'object') {
-        // Hacer un type assertion seguro
-        const monitors = data.monitors as unknown as MonitorsData;
-        
-        // Intentar acceder por código
-        if (monitors[code]) {
-          return monitors[code];
-        }
-        
-        // Si no encontramos por código, buscar por título
-        for (const key in monitors) {
-          const monitor = monitors[key];
-          if (monitor.title && 
-              typeof monitor.title === 'string' && 
-              monitor.title.toLowerCase().includes(titleMatch)) {
-            return monitor;
-          }
-        }
-      }
-      
-      return null;
-    };
-
-    // Procesar los datos de la API
-    const processCurrency = (currency: string) => {
-      // Mapeo de códigos de moneda a títulos de búsqueda
-      const currencyMap: Record<string, {code: string, title: string, defaultTitle: string}> = {
-        'usd': {code: 'usd', title: 'dólar', defaultTitle: 'Dólar estadounidense'},
-        'eur': {code: 'eur', title: 'euro', defaultTitle: 'Euro'}
-      };
-      
-      const currencyInfo = currencyMap[currency];
-      if (!currencyInfo) return null;
-      
-      const currencyData = findCurrencyData(currencyInfo.code, currencyInfo.title);
-      if (!currencyData) {
-        console.warn(`No se encontraron datos para la moneda: ${currency}`);
-        return null;
-      }
-
-      console.log(`Datos procesados para ${currency}:`, currencyData);
-      
-      const price = getNumericValue(currencyData.price);
-      const priceOld = getNumericValue(currencyData.price_old || 0);
-      const change = getNumericValue(currencyData.change || 0);
-      const percent = getNumericValue(currencyData.percent || 0);
-      
+      // Se mantiene "change" en porcentaje porque la UI actual lo presenta como %.
       return {
-        price,
-        price_old: priceOld || price * 0.99,
-        change,
+        price: currentPrice,
+        price_old: safePrevious,
+        change: percent,
         percent,
-        color: currencyData.color || getColorFromChange(change),
-        symbol: currencyData.symbol || getSymbolFromChange(change),
-        title: currencyData.title || currencyInfo.defaultTitle,
-        image: currencyData.image || (currency === 'usd' 
-          ? 'https://res.cloudinary.com/dcpyfqx87/image/upload/v1729921477/monitors/public_id:united-states.webp'
-          : 'https://res.cloudinary.com/dcpyfqx87/image/upload/v1729921474/monitors/public_id:european-union.webp'),
-        last_update: currencyData.last_update || now.toLocaleString('es-VE')
+        color: getColorFromChange(changeAmount),
+        symbol: getSymbolFromChange(changeAmount),
+        title,
+        image,
+        last_update: lastUpdateRaw
       };
     };
 
-    // Obtener datos para USD y EUR
-    console.log('Procesando datos para USD y EUR...');
-    const usdData = processCurrency('usd');
-    const eurData = processCurrency('eur');
-
-    console.log('Datos procesados - USD:', usdData);
-    console.log('Datos procesados - EUR:', eurData);
+    const usdPreviousPrice = getYesterdayRate(usdHistory, usdPrice);
+    const eurPreviousPrice = getYesterdayRate(eurHistory, eurPrice);
 
     // Crear el objeto de respuesta con el formato esperado
     const result: MonitorData = {
       datetime: {
         date: formattedDate.split(',')[0],
-        time: now.toLocaleTimeString('es-ES', { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          hour12: true 
+        time: now.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
         })
       },
-      monitors: {}
+      monitors: {
+        usd: buildCurrencyMonitor(
+          usdPrice,
+          usdPreviousPrice,
+          'USD',
+          'https://res.cloudinary.com/dcpyfqx87/image/upload/v1729921477/monitors/public_id:united-states.webp',
+          getLastUpdate(usdHistory, data.usd?.date)
+        ),
+        eur: buildCurrencyMonitor(
+          eurPrice,
+          eurPreviousPrice,
+          'EUR',
+          'https://res.cloudinary.com/dcpyfqx87/image/upload/v1729921474/monitors/public_id:european-union.webp',
+          getLastUpdate(eurHistory, data.eur?.date)
+        )
+      }
     };
 
-    // Agregar solo las monedas que tengan datos
-    if (usdData) {
-      console.log('Agregando datos de USD al resultado');
-      result.monitors.usd = usdData;
-    } else {
-      console.warn('No se encontraron datos para USD');
-    }
-    
-    if (eurData) {
-      console.log('Agregando datos de EUR al resultado');
-      result.monitors.eur = eurData;
-    } else {
-      console.warn('No se encontraron datos para EUR');
+    if (!usdPrice && !eurPrice) {
+      throw new Error('No se pudieron obtener tasas válidas de USD/EUR');
     }
 
-    console.log('Resultado final:', result);
     return result;
     
   } catch (error) {
