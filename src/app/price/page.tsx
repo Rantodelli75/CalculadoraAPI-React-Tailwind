@@ -46,9 +46,6 @@ export default function Monitores() {
   }
 
   // Verificamos la estructura de los datos recibidos
-  console.log('=== DATOS RECIBIDOS ===');
-  console.log('monitorData:', JSON.stringify(monitorData, null, 2));
-  
   if (!monitorData.monitors) {
     console.error('No se encontró la propiedad monitors en los datos');
     return (
@@ -59,7 +56,6 @@ export default function Monitores() {
   }
   
   const monitorKeys = Object.keys(monitorData.monitors);
-  console.log('Monitores disponibles:', monitorKeys);
   
   if (monitorKeys.length === 0) {
     console.warn('No hay monedas disponibles en los datos');
@@ -73,14 +69,9 @@ export default function Monitores() {
   // Ordenamos las monedas para mostrarlas en el orden deseado
   const currencyOrder = ['usd', 'eur'];
   const sortedCurrencies = currencyOrder
-    .filter(key => {
-      const exists = monitorData.monitors && monitorData.monitors[key];
-      console.log(`Moneda ${key} existe:`, exists);
-      return exists;
-    })
+    .filter(key => monitorData.monitors && monitorData.monitors[key])
     .map(key => {
       const currencyData = monitorData.monitors[key];
-      console.log(`Procesando moneda ${key}:`, currencyData);
       
       // Validar datos requeridos
       const price = Number(currencyData?.price) || 0;
@@ -101,10 +92,7 @@ export default function Monitores() {
         image: currencyData?.image || `https://via.placeholder.com/24?text=${key.toUpperCase()}`
       };
     });
-    
-  console.log('=== MONEDAS PROCESADAS ===');
-  console.log('Monedas ordenadas:', JSON.stringify(sortedCurrencies, null, 2));
-  
+
   if (sortedCurrencies.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen">

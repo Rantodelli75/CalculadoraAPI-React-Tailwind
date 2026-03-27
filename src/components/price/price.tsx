@@ -30,6 +30,14 @@ export const MonitorCard = ({
   const previousPrice = Number(price_old) || 0;
   const changeValue = Number(change) || 0;
   const percentValue = Number(percent) || 0;
+  const upperName = name.toUpperCase();
+  const useFourDecimals = upperName === "EUR" || upperName === "USD";
+
+  const formatRate = (value: number) =>
+    value.toLocaleString("es-VE", {
+      minimumFractionDigits: useFourDecimals ? 4 : 2,
+      maximumFractionDigits: useFourDecimals ? 4 : 2,
+    });
   
   // Determinar si el cambio es positivo basado en el valor numérico
   const isPositive = (changeValue >= 0 && percentValue >= 0) || color === 'green' || color === 'green-500';
@@ -68,7 +76,7 @@ export const MonitorCard = ({
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-white">
-              {displayPrice} <span className="text-lg text-[#848E9C]">Bs.</span>
+              {formatRate(displayPrice)} <span className="text-lg text-[#848E9C]">Bs.</span>
             </div>
           </div>
         </div>
@@ -83,7 +91,7 @@ export const MonitorCard = ({
           </div>
           <div>
             <span className="text-[#848E9C]">Anterior: </span>
-            <span className="text-white font-medium">{previousPrice.toFixed(2)} Bs</span>
+            <span className="text-white font-medium">{formatRate(previousPrice)} Bs</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3 text-[#848E9C]" />

@@ -255,7 +255,9 @@ export default function Calculator() {
                 </p>
                 <p className="text-sm">
                   <span className="font-medium text-white">1 EUR = </span>
-                  <span className="text-primary font-medium text-white">{rates.eur.toLocaleString("es-VE")} </span>
+                  <span className="text-primary font-medium text-white">
+                    {rates.eur.toLocaleString("es-VE", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+                  </span>{" "}
                   <span className="font-medium text-white">VES</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
