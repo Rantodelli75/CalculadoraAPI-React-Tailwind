@@ -23,6 +23,8 @@ El proyecto busca solucionar la necesidad de tener en un solo lugar la informaci
 * **🕒 Fecha de Actualización:** Siempre sabrás cuán reciente es la información que estás consultando.
 
 ![Landing – FORZA MOTORCLUB](./public/scrinnshots/monedas.png)
+![Landing – FORZA MOTORCLUB](./public/scrinnshots/calculadora.png)
+
 
 
 ---
