@@ -22,7 +22,7 @@ El proyecto busca solucionar la necesidad de tener en un solo lugar la informaci
 * **📱 Diseño Responsivo:** Interfaz limpia y adaptada para una excelente experiencia tanto en escritorio como en dispositivos móviles.
 * **🕒 Fecha de Actualización:** Siempre sabrás cuán reciente es la información que estás consultando.
 
-![Landing – FORZA MOTORCLUB](./public/screenshots/monedas.png)
+![Landing – FORZA MOTORCLUB](./public/scrinnshots/monedas.png)
 
 
 ---
